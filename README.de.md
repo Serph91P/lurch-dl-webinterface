@@ -3,7 +3,8 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](./README.md)
 [![de](https://img.shields.io/badge/lang-de-yellow.svg)](./README.de.md)
 ![GitHub top language](https://img.shields.io/github/languages/top/ChaoticByte/lurch-dl)
-![GitHub all releases](https://img.shields.io/github/downloads/ChaoticByte/lurch-dl/total)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/ChaoticByte/lurch-dl)
+
 
 ## Features
 
