@@ -158,9 +158,12 @@ func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, st
 			bufferDt += dtIteration
 		}
 	}
-	defer infoFile.Close()
+	infoFile.Close()
 	if !keyboardInterrupt {
-		os.Remove(infoFilename)
+		err := os.Remove(infoFilename)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
