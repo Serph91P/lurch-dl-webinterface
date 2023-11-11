@@ -1,5 +1,8 @@
 # LurchDL - ein Downloader für [gronkh.tv](https://gronkh.tv)
 
+[![en](https://img.shields.io/badge/lang-en-red.svg)](./README.md)
+[![de](https://img.shields.io/badge/lang-de-yellow.svg)](./README.de.md)
+
 ## Features
 
 - Download von [Stream-Episoden](https://gronkh.tv/streams/)
