@@ -42,6 +42,7 @@ func (cli *Cli) Run() {
 	flag.StringVar(&timestampStop, "stop", "", "")
 	flag.BoolVar(&overwrite, "overwrite", false, "")
 	flag.BoolVar(&continueDl, "continue", false, "")
+	flag.Usage = cli.Help
 	flag.Parse()
 	var startDuration time.Duration
 	var stopDuration time.Duration
