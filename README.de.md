@@ -21,13 +21,20 @@
 
 ## Unterstützte Platformen
 
-- Linux
+- Linux (i386, amd64*, arm, arm64)
+- Windows (32bit, 64bit*, arm64)
+
+\* getestet
 
 ## Download / Installation
 
 Executables sind unter [Releases](https://github.com/ChaoticByte/lurch-dl/releases) zu finden. Hier kann einfach eine Executable heruntergeladen, und über das Terminal ausgeführt werden.
 
 ## Verwendung
+
+Dies ist eine Commandline-Anwendung. Das heißt, dass sie nur in einem Terminal (bei Windows ist das Powershell) verwendet werden kann.
+
+Das sind die zur Verfügung stehenden Commandline-Argumente:
 
 ```
 lurch-dl --url string       Die URL zum Video
@@ -42,12 +49,18 @@ lurch-dl --url string       Die URL zum Video
          [--overwrite]      Überschreiben der Datei, wenn diese bereits existiert
 ```
 
+### Windows
+
+1. Öffne den Ordner in dem die Anwendung (lurch-dl.exe) liegt
+2. `Shift`+`Rechtsklick` in den Ordner -> dann auf `PowerShell-Fenster hier öffnen`.
+3. Führe die Anwendung wie oben und unten beschrieben aus
+
 ### Beispiele
 
-Download eines Videos im besten verfügbaren Format:
+Download eines Videos im besten verfügbaren Format (Windows):
 
 ```
-./lurch-dl --url https://gronkh.tv/streams/777
+.\lurch-dl.exe --url https://gronkh.tv/streams/777
 
 Title: GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
 Format: 1080p60
@@ -55,10 +68,10 @@ Downloaded 0.43% at 10.00 MB/s
 ...
 ```
 
-Fortsetzen eines Downloads:
+Fortsetzen eines Downloads (Windows):
 
 ```
-./lurch-dl --url https://gronkh.tv/streams/777 --continue
+.\lurch-dl.exe --url https://gronkh.tv/streams/777 --continue
 
 Title: GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
 Format: 1080p60
@@ -66,14 +79,14 @@ Downloaded 0.68% at 10.00 MB/s
 ...
 ```
 
-Angeben eines Start- und Stop-Timestamps:
+Angeben eines Start- und Stop-Timestamps (Linux):
 
 ```
 ./lurch-dl --url https://gronkh.tv/streams/777 --start 5h6m41s --stop 5h6m58s
 ...
 ```
 
-Auflisten aller verfügbaren Formate:
+Auflisten aller verfügbaren Formate (Linux):
 
 ```
 ./lurch-dl --url https://gronkh.tv/streams/777 --list-formats
@@ -84,7 +97,7 @@ Available formats:
  - 360p
 ```
 
-Download im angegebenen Format:
+Download im angegebenen Format (Linux):
 
 ```
 ./lurch-dl --url https://gronkh.tv/streams/777 --format 720p
@@ -95,9 +108,9 @@ Downloaded 0.32% at 10.00 MB/s
 ...
 ```
 
-Angeben eines Dateinamens:
+Angeben eines Dateinamens (Windows):
 
 ```
-./lurch-dl --url https://gronkh.tv/streams/777 --output Stream777.ts
+.\lurch-dl.exe --url https://gronkh.tv/streams/777 --output Stream777.ts
 ...
 ```

@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
 
+OUTPUT_DIR="./dist"
 VERSION=$(git describe --tags)
 
-echo "Building version ${VERSION}"
+function gobuild {
+    printf " * ${GOOS}\t${GOARCH}\t${OUTPUT_FILE} "
+    go build -ldflags="-X 'main.Version=${VERSION}'" -o "${OUTPUT_DIR}/${OUTPUT_FILE}" && printf "\t✔\n"
+}
 
-# linux i386
-printf "... for linux i386 "
-GOOS=linux GOARCH=386 go build -ldflags="-X 'main.Version=${VERSION}'" -o dist/lurch-dl_${VERSION}_linux_i386 && printf "\t✔\n"
+echo "Building version ${VERSION} into ${OUTPUT_DIR}"
 
-# linux amd64
-printf "... for linux amd64 "
-GOOS=linux GOARCH=amd64 go build -ldflags="-X 'main.Version=${VERSION}'" -o dist/lurch-dl_${VERSION}_linux_amd64 && printf "\t✔\n"
-
-# linux arm
-printf "... for linux arm "
-GOOS=linux GOARCH=arm go build -ldflags="-X 'main.Version=${VERSION}'" -o dist/lurch-dl_${VERSION}_linux_arm && printf "\t✔\n"
-
-# linux arm64
-printf "... for linux arm64 "
-GOOS=linux GOARCH=arm64 go build -ldflags="-X 'main.Version=${VERSION}'" -o dist/lurch-dl_${VERSION}_linux_arm64 && printf "\t✔\n"
+GOOS=windows GOARCH=386   OUTPUT_FILE=lurch-dl_${VERSION}_32bit.exe   gobuild
+GOOS=windows GOARCH=amd64 OUTPUT_FILE=lurch-dl_${VERSION}_64bit.exe   gobuild
+GOOS=linux   GOARCH=386   OUTPUT_FILE=lurch-dl_${VERSION}_linux_i386  gobuild
+GOOS=linux   GOARCH=amd64 OUTPUT_FILE=lurch-dl_${VERSION}_linux_amd64 gobuild
+GOOS=linux   GOARCH=arm   OUTPUT_FILE=lurch-dl_${VERSION}_linux_arm   gobuild
+GOOS=linux   GOARCH=arm64 OUTPUT_FILE=lurch-dl_${VERSION}_linux_arm64 gobuild
