@@ -9,7 +9,8 @@
 ## Features
 
 - Download von [Stream-Episoden](https://gronkh.tv/streams/)
-- Mit Start- und Stop-Timestamps kann auch nur ein Teil des Videos heruntergeladen werden
+- Mit Start- und Stop-Timestamps kann nur ein Teil des Videos heruntergeladen werden
+- Es können einzelne Kapitel heruntergeladen werden
 - Downloads können fortgesetzt werden
 - Bedienung über das Terminal
 

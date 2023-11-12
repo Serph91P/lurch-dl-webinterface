@@ -10,6 +10,7 @@
 
 - Download [Stream-Episodes](https://gronkh.tv/streams/)
 - Specify a start- and stop-timestamp to download only a portion of the video
+- Download a specific chapter
 - Continuable Downloads
 - Commandline Interface
 
