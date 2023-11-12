@@ -121,7 +121,6 @@ func (cli *Cli) Run() {
 	if chapterIdx >= 0 {
 		fmt.Printf("Chapter: %v. %v\n", chapterNum, meta.Chapters[chapterIdx].Title)
 	}
-	fmt.Printf("\n")
 	defer fmt.Print("\n")
 	if err = DownloadStreamEpisode(meta, format, chapterIdx, startDuration, stopDuration, outputFile, overwrite, continueDl, cli); err != nil {
 		fmt.Print("\n")

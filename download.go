@@ -5,6 +5,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -67,8 +68,9 @@ func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, ch
 	defer videoFile.Close()
 	if overwrite {
 		videoFile.Truncate(0)
-		videoFile.Seek(0, 0)
 	}
+	// always seek to the end
+	videoFile.Seek(0, io.SeekEnd)
 	// info file
 	infoFilename := filename + ".dl-info"
 	if continueDl {
@@ -88,7 +90,7 @@ func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, ch
 		return err
 	}
 	infoFile.Truncate(0)
-	infoFile.Seek(0, 0)
+	infoFile.Seek(0, io.SeekStart)
 	infoFile.Write([]byte(strconv.Itoa(nextChunk)))
 	if err != nil {
 		return err
@@ -160,7 +162,7 @@ func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, ch
 		videoFile.Write(data)
 		nextChunk++
 		infoFile.Truncate(0)
-		infoFile.Seek(0, 0)
+		infoFile.Seek(0, io.SeekStart)
 		infoFile.Write([]byte(strconv.Itoa(nextChunk)))
 		var dtIteration float64 = float64(time.Now().UnixNano() - time1) / 1000000000.0
 		if !delayNow {
