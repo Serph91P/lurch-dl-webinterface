@@ -13,11 +13,12 @@
 - Downloads können fortgesetzt werden
 - Bedienung über das Terminal
 
-## Bekannte Fehler
+## Bekannte Probleme
 
 - Downloads können mit maximal 10 Mbyte/s heruntergeladen werden, zudem wird Buffering simuliert. Das ist notwendig um IP-Bans durch API-Ratelimits zu verhindern.
 - Bei Start- und Stop-Timestamps kann es zu Abweichungen von ± 8 Sekunden kommen
 - Manche Video-Player könnten mit der heruntergeladenen Videodatei Probleme haben. Dies kann mit FFMPEG behoben werden, indem das Video in eine MKV-Datei umgeschrieben wird: `ffmpeg -i video.ts -acodec copy -vcodec copy video.mkv`
+- In der Powershell-Konsole werden Emojis und andere Unicode-Zeichen nicht richtig dargestellt
 
 ## Unterstützte Platformen
 
@@ -38,15 +39,21 @@ Das sind die zur Verfügung stehenden Commandline-Argumente:
 
 ```
 lurch-dl --url string       Die URL zum Video
-         [-h --help]        Zeigt diesen Hilfetext an
-         [--list-formats]   Listet alle verfügbaren Formate
-         [--format string]  Das gewünschte Videoformat (default: auto)
+         [-h --help]        Diesen Hilfetext anzeigen
+         [--list-chapters]  Alle Kapitel auflisten
+         [--list-formats]   Alle verfügbaren Formate auflisten
+         [--chapter int]    Die gewünschte Kapitelnummer
+                            Der berechnete Start- und Stop-Timestamp
+                            kann mit --start und --stop überschrieben werden
+                            default: -1 (disabled)
+         [--format string]  Das gewünschte Videoformat
+                            default: auto
          [--output string]  Der Dateiname. Wird automatisch ermittelt
                             wenn dieser Parameter weggelassen wird.
          [--start string]   Start-Timestamp, z.B. 12m34s
          [--stop string]    Stop-Timestamp, z.B. 1h23m45s
-         [--continue]       Fortsetzen des Downloads, wenn möglich
-         [--overwrite]      Überschreiben der Datei, wenn diese bereits existiert
+         [--continue]       Download fortsetzen, wenn möglich
+         [--overwrite]      Datei überschreiben, wenn diese bereits existiert
 ```
 
 ### Windows
@@ -78,6 +85,34 @@ Format: 1080p60
 Downloaded 0.68% at 10.00 MB/s
 ...
 ```
+
+
+Auflisten aller Kapitel (Windows):
+
+```
+.\lurch-dl.exe --url https://gronkh.tv/streams/777 --list-chapters
+
+GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
+
+Chapters:
+  1         0s	Just Chatting
+  2    2h53m7s	Alan Wake II
+  3    9h35m0s	Just Chatting
+```
+
+Download eines bestimmten Kapitels (Windows):
+
+```
+.\lurch-dl.exe --url https://gronkh.tv/streams/777 --chapter 2
+
+GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
+Format: 1080p60
+Chapter: 2. Alan Wake II
+
+Downloaded 3.22% at 10.00 MB/s
+...
+```
+
 
 Angeben eines Start- und Stop-Timestamps (Linux):
 

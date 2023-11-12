@@ -18,6 +18,7 @@
 - Downloads are capped to 10 Mbyte/s and buffering is simulated to pre-empt IP blocking due to API ratelimiting
 - Start- and stop-timestamps are not very accurate (± 8 seconds)
 - Some videoplayers may have problems with the resulting file. To fix this, you can use ffmpeg to rewrite the video into a MKV-File: `ffmpeg -i video.ts -acodec copy -vcodec copy video.mkv`
+- Emojis and other Unicode characters don't get displayed properly in a Powershell Console
 
 ## Supported Platforms
 
@@ -39,8 +40,14 @@ This are the commandline arguments:
 ```
 lurch-dl --url string       The url to the video
          [-h --help]        Show this help and exit
+         [--list-chapters]  List chapters and exit
          [--list-formats]   List available formats and exit
-         [--format string]  The desired video format (default: auto)
+         [--chapter int]    The chapter you want to download
+                            The calculated start and stop timestamps can be
+                            overwritten by --start and --stop
+                            default: -1 (disabled)
+         [--format string]  The desired video format
+                            default: auto
          [--output string]  The output file. Will be determined automatically
                             if omitted.
          [--start string]   Define a video timestamp to start at, e.g. 12m34s
@@ -76,6 +83,32 @@ Continue a download (Windows):
 Title: GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
 Format: 1080p60
 Downloaded 0.68% at 10.00 MB/s
+...
+```
+
+List all chapters (Windows):
+
+```
+.\lurch-dl.exe --url https://gronkh.tv/streams/777 --list-chapters
+
+GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
+
+Chapters:
+  1         0s	Just Chatting
+  2    2h53m7s	Alan Wake II
+  3    9h35m0s	Just Chatting
+```
+
+Download a specific chapter (Windows):
+
+```
+.\lurch-dl.exe --url https://gronkh.tv/streams/777 --chapter 2
+
+GTV0777, 2023-11-09 - DIESER STREAM IST ILLEGAL UND SOLLTE VERBOTEN WERDEN!! ⭐ ️ 247 auf @GronkhTV ⭐ ️ !comic !archiv !a
+Format: 1080p60
+Chapter: 2. Alan Wake II
+
+Downloaded 3.22% at 10.00 MB/s
 ...
 ```
 

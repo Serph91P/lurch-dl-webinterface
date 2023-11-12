@@ -25,3 +25,4 @@ dist/
 
 # Media files
 *.ts
+*.dl-info

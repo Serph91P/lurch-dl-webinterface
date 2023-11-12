@@ -12,6 +12,7 @@ import (
 type UserInterface interface {
 	Run()
 	AvailableFormats(formats []VideoFormat)
+	Chapters(chapters []Chapter)
 	Progress(percentage float32, rate float64, delaying bool, waiting bool, retries int)
 	InfoMessage(msg string)
 	Aborted()
@@ -23,8 +24,10 @@ type Cli struct {}
 func (cli *Cli) Run() {
 	// cli arguments
 	var help bool
+	var listChapters bool
 	var listFormats bool
 	var url string
+	var chapterNum int
 	var formatName string
 	var outputFile string
 	var timestampStart string
@@ -34,8 +37,10 @@ func (cli *Cli) Run() {
 	// var outputFile string
 	flag.BoolVar(&help, "h", false, "")
 	flag.BoolVar(&help, "help", false, "")
+	flag.BoolVar(&listChapters, "list-chapters", false, "")
 	flag.BoolVar(&listFormats, "list-formats", false, "")
 	flag.StringVar(&url, "url", "", "")
+	flag.IntVar(&chapterNum, "chapter", 0, "") // 0 is out of range bc. chapters start at 1 -> 0 means not defined
 	flag.StringVar(&formatName, "format", "auto", "")
 	flag.StringVar(&outputFile, "output", "", "")
 	flag.StringVar(&timestampStart, "start", "", "")
@@ -65,6 +70,7 @@ func (cli *Cli) Run() {
 			os.Exit(1)
 		}
 	}
+	chapterIdx := chapterNum-1
 	// run actions
 	if help {
 		cli.Help()
@@ -82,14 +88,28 @@ func (cli *Cli) Run() {
 		fmt.Println("Video category '" + video.Category + "' not supported.")
 		os.Exit(1)
 	}
-	meta, err := GetStreamEpisodeMeta(video.Id)
+	meta, err := GetStreamEpisodeMeta(video.Id, chapterIdx)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if listFormats {
-		cli.AvailableFormats(meta.Formats)
+	if listChapters || listFormats {
+		fmt.Println(meta.Title)
+		if listChapters {
+			fmt.Print("\n")
+			cli.Chapters(meta.Chapters)
+		}
+		if listFormats {
+			fmt.Print("\n")
+			cli.AvailableFormats(meta.Formats)
+		}
 		os.Exit(0)
+	}
+	if chapterIdx >= 0 {
+		if chapterIdx >= len(meta.Chapters) {
+			fmt.Printf("Chapter %v not found.\n", chapterNum)
+			os.Exit(1)
+		}
 	}
 	format, err := meta.GetFormat(formatName)
 	if err != nil {
@@ -97,12 +117,23 @@ func (cli *Cli) Run() {
 		cli.AvailableFormats(meta.Formats)
 		os.Exit(1)
 	}
-	fmt.Printf("Title: %v\nFormat: %v\n", meta.Title, format.Name)
+	fmt.Printf("%v\nFormat: %v\n", meta.Title, format.Name)
+	if chapterIdx >= 0 {
+		fmt.Printf("Chapter: %v. %v\n", chapterNum, meta.Chapters[chapterIdx].Title)
+	}
+	fmt.Printf("\n")
 	defer fmt.Print("\n")
-	if err = DownloadStreamEpisode(meta, format, startDuration, stopDuration, outputFile, overwrite, continueDl, cli); err != nil {
+	if err = DownloadStreamEpisode(meta, format, chapterIdx, startDuration, stopDuration, outputFile, overwrite, continueDl, cli); err != nil {
 		fmt.Print("\n")
 		fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+func (cli *Cli) Chapters(chapters []Chapter) {
+	fmt.Println("Chapters:")
+	for i, f := range chapters {
+		fmt.Printf("%3d %10s\t%s\n", i+1, f.Offset, f.Title)
 	}
 }
 
@@ -136,8 +167,14 @@ func (cli *Cli) Aborted() {
 func (cli *Cli) Help() {
 	fmt.Println(`lurch-dl --url string       The url to the video
          [-h --help]        Show this help and exit
+         [--list-chapters]  List chapters and exit
          [--list-formats]   List available formats and exit
-         [--format string]  The desired video format (default: auto)
+         [--chapter int]    The chapter you want to download
+                            The calculated start and stop timestamps can be
+                            overwritten by --start and --stop
+                            default: -1 (disabled)
+         [--format string]  The desired video format
+                            default: auto
          [--output string]  The output file. Will be determined automatically
                             if omitted.
          [--start string]   Define a video timestamp to start at, e.g. 12m34s

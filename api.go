@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -84,12 +85,18 @@ func (err *FormatNotFoundError) Error() string {
 	return "Format " + err.FormatName + " is not available."
 }
 
+type Chapter struct {
+	Title string `json:"title"`
+	Offset time.Duration `json:"offset"`
+}
+
 type StreamEpisodeMeta struct {
 	Episode string
 	Formats []VideoFormat
 	Title string `json:"title"`
 	ProposedFilename string
 	PlaylistUrl string `json:"playlist_url"`
+	Chapters []Chapter `json:"chapters"`
 }
 
 func (meta StreamEpisodeMeta) GetFormat(formatName string) (VideoFormat, error) {
@@ -113,7 +120,7 @@ func (meta StreamEpisodeMeta) GetFormat(formatName string) (VideoFormat, error) 
 	}
 }
 
-func GetStreamEpisodeMeta(episode string) (StreamEpisodeMeta, error) {
+func GetStreamEpisodeMeta(episode string, chapterIdx int) (StreamEpisodeMeta, error) {
 	meta := StreamEpisodeMeta{}
 	meta.Episode = episode
 	info_data, err := httpGet(
@@ -128,7 +135,18 @@ func GetStreamEpisodeMeta(episode string) (StreamEpisodeMeta, error) {
 	json.Unmarshal(info_data, &meta)
 	meta.Title = strings.ToValidUTF8(meta.Title, "")
 	// sanitized proposedFilename
-	meta.ProposedFilename = sanitizeUnicodeFilename(meta.Title) + ".ts"
+	if chapterIdx >= 0 && chapterIdx < len(meta.Chapters) {
+		meta.ProposedFilename = fmt.Sprintf("GTV%04s - %v. %s.ts", episode, chapterIdx+1, meta.Chapters[chapterIdx].Title)
+	} else {
+		meta.ProposedFilename = sanitizeUnicodeFilename(meta.Title) + ".ts"
+	}
+	// Sort Chapters & correct offset
+	for i := range meta.Chapters {
+		meta.Chapters[i].Offset = meta.Chapters[i].Offset * time.Second
+	}
+	sort.Slice(meta.Chapters, func(i int, j int) bool {
+		return meta.Chapters[i].Offset < meta.Chapters[j].Offset
+	})
 	// Formats
 	playlist_url_data, err := httpGet(
 		fmt.Sprintf(ApiBaseurlStreamEpisodePlInfo, episode),

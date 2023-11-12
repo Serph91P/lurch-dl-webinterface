@@ -48,7 +48,7 @@ func (err *FileExistsError) Error() string {
 
 const MaxRetries = 5
 
-func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, start time.Duration, stop time.Duration, filename string, overwrite bool, continueDl bool, ui UserInterface) error {
+func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, chapterIdx int, start time.Duration, stop time.Duration, filename string, overwrite bool, continueDl bool, ui UserInterface) error {
 	var err error
 	var nextChunk int = 0
 	// video file
@@ -95,6 +95,15 @@ func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, st
 	}
 	// download
 	chunklist, err := GetVideoChunkList(format)
+	if chapterIdx >= 0 {
+		if start < 0 {
+			start = time.Duration(episodeMeta.Chapters[chapterIdx].Offset)
+		}
+		if stop < 0 && chapterIdx+1 < len(episodeMeta.Chapters) {
+			// next chapter is stop
+			stop = time.Duration(episodeMeta.Chapters[chapterIdx+1].Offset)
+		}
+	}
 	chunklist = chunklist.Cut(start, stop)
 	if err != nil {
 		return err
