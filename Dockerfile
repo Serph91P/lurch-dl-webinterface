@@ -11,4 +11,15 @@ FROM docker.io/alpine:3.18
 WORKDIR /output/
 COPY --from=builder /usr/local/bin/lurch-dl /usr/local/bin/lurch-dl
 
-ENTRYPOINT ["/usr/local/bin/lurch-dl"]
+RUN apk add --no-cache python3 py3-pip \
+    && pip3 install flask gunicorn
+
+COPY /web_ui/app.py /webapp/app.py
+COPY /web_ui/templates /webapp/templates
+
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+WORKDIR /webapp
+
+ENTRYPOINT ["/start.sh"]
