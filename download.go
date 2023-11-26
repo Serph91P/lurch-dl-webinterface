@@ -133,7 +133,7 @@ func DownloadStreamEpisode(episodeMeta StreamEpisodeMeta, format VideoFormat, ch
 			if keyboardInterrupt { break }
 			time1 = time.Now().UnixNano()
 			ui.Progress(percentage, actualRate, false, true, retries)
-			data, err = httpGet(chunklist.BaseUrl + "/" + chunk, []http.Header{ApiHeadersBase, ApiHeadersVideoAdditional}, nil, time.Second * 5)
+			data, err = httpGet(chunklist.BaseUrl + "/" + chunk, []http.Header{ApiHeadersBase, ApiHeadersVideoAdditional}, time.Second * 5)
 			if err != nil {
 				if retries == MaxRetries {
 					return err

@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-func httpGet(url string, headers []http.Header, body io.Reader, timeout time.Duration) ([]byte, error) {
+func httpGet(url string, headers []http.Header, timeout time.Duration) ([]byte, error) {
 	data := []byte{}
-	req, err := http.NewRequest("GET", url, body)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return data, err
 	}

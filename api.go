@@ -64,7 +64,7 @@ func (cl *VideoChunkList) Cut(from time.Duration, to time.Duration) VideoChunkLi
 
 func GetVideoChunkList(video VideoFormat) (VideoChunkList, error) {
 	baseUrl := video.Url[:strings.LastIndex(video.Url, "/")]
-	data, err := httpGet(video.Url, []http.Header{ApiHeadersBase, ApiHeadersMetaAdditional}, nil, time.Second * 10)
+	data, err := httpGet(video.Url, []http.Header{ApiHeadersBase, ApiHeadersMetaAdditional}, time.Second * 10)
 	if err != nil {
 		return VideoChunkList{}, err
 	}
@@ -126,7 +126,7 @@ func GetStreamEpisodeMeta(episode string, chapterIdx int) (StreamEpisodeMeta, er
 	info_data, err := httpGet(
 		fmt.Sprintf(ApiBaseurlStreamEpisodeInfo, episode),
 		[]http.Header{ApiHeadersBase, ApiHeadersMetaAdditional},
-		nil, time.Second * 10,
+		time.Second * 10,
 	)
 	if err != nil {
 		return meta, err
@@ -151,7 +151,7 @@ func GetStreamEpisodeMeta(episode string, chapterIdx int) (StreamEpisodeMeta, er
 	playlist_url_data, err := httpGet(
 		fmt.Sprintf(ApiBaseurlStreamEpisodePlInfo, episode),
 		[]http.Header{ApiHeadersBase, ApiHeadersMetaAdditional},
-		nil, time.Second * 10,
+		time.Second * 10,
 	)
 	if err != nil {
 		return meta, err
@@ -160,7 +160,7 @@ func GetStreamEpisodeMeta(episode string, chapterIdx int) (StreamEpisodeMeta, er
 	playlist_data, err := httpGet(
 		meta.PlaylistUrl,
 		[]http.Header{ApiHeadersBase, ApiHeadersMetaAdditional},
-		nil, time.Second * 10,
+		time.Second * 10,
 	)
 	meta.Formats = parseAvailFormatsFromM3u8(string(playlist_data))
 	return meta, err
