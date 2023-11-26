@@ -1,4 +1,4 @@
 #!/bin/sh
 
-# Starte Flask-Server
-gunicorn -b 0.0.0.0:5000 app:app
+# Starte Quart-App mit Uvicorn
+uvicorn app:app --host 0.0.0.0 --port 5000

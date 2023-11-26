@@ -1,23 +1,27 @@
-from flask import Flask, request, render_template
+from quart import Quart, render_template, request, websocket
+import asyncio
 import subprocess
 
-app = Flask(__name__)
+app = Quart(__name__)
+
+async def run_lurch_dl(url):
+    command = ["/usr/local/bin/lurch-dl", "--url", url]
+    proc = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+    if proc.returncode == 0:
+        return stdout.decode()
+    else:
+        return stderr.decode()
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
+async def index():
     if request.method == 'POST':
-        url = request.form.get('url')
+        form = await request.form
+        url = form.get('url')
         if url:
-            command = [
-                "/usr/local/bin/lurch-dl", "--url", url,
-                # Füge hier weitere statische Parameter hinzu, falls benötigt
-            ]
-            try:
-                subprocess.run(command, check=True)
-                return "Download gestartet für URL: " + url
-            except subprocess.CalledProcessError as e:
-                return "Fehler beim Ausführen des Befehls: " + str(e)
-    return render_template('index.html')
+            output = await run_lurch_dl(url)
+            return await render_template('index.html', output=output, url=url)
+    return await render_template('index.html', url='')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run()
