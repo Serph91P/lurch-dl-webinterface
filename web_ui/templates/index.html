@@ -2,21 +2,54 @@
 <html>
 <head>
     <title>Lurch-DL Web Interface</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            var ws = new WebSocket("ws://" + window.location.host + "/ws");
+    
+            ws.onmessage = function(event) {
+                var message = JSON.parse(event.data);
+    
+                if (message.type === "title") {
+                    document.getElementById("title").textContent = "Titel: " + message.title;
+                } else if (message.type === "format") {
+                    document.getElementById("format").textContent = "Format: " + message.format;
+                } else if (message.type === "progress") {
+                    var progress = (message.progress * 100).toFixed(2) + "%";  // Fortschritt in Prozent
+                    var rate = (message.rate / 1000000).toFixed(2) + " MB/s";  // Download-Geschwindigkeit in MB/s
+                    var status = message.status ? "Status: " + message.status : "";  // Zusätzlicher Status
+                    document.getElementById("progress").textContent = "Fortschritt: " + progress + ", Geschwindigkeit: " + rate + ", " + status;
+                } else if (message.type === "error") {
+                    document.getElementById("error").textContent = "Fehler: " + message.message;
+                }
+            };
+    
+            document.getElementById("start-download").onclick = function() {
+                var url = document.getElementById("url").value;
+                ws.send(JSON.stringify({ action: "start", url: url }));
+                document.getElementById("stop-download").style.display = 'block';
+            };
+    
+            document.getElementById("stop-download").onclick = function() {
+                ws.send(JSON.stringify({ action: "stop" }));
+                document.getElementById("stop-download").style.display = 'none';
+            };
+        });
+    </script>    
 </head>
 <body>
-    <h1>Lurch-DL Web Interface</h1>
-    <form method="post">
-        <label for="url">URL:</label>
-        <input type="text" id="url" name="url" value="{{ url }}">
-        <input type="submit" value="Download starten">
-    </form>
-    {% if output %}
-        <h2>Output</h2>
-        <pre>{{ output }}</pre>
-    {% endif %}
-    {% if error %}
-        <h2>Error</h2>
-        <pre>{{ error }}</pre>
-    {% endif %}
+    <header>
+        <h1>Lurch-DL Web Interface</h1>
+    </header>
+    <div class="container">
+        <input type="text" id="url" placeholder="URL eingeben">
+        <button id="start-download">Download starten</button>
+        <button id="stop-download" style="display: none;">Download stoppen</button>
+        <div id="title"></div>
+        <div id="format"></div>
+        <div id="progress"></div>
+        <div id="error"></div>
+        <div id="output"></div>
+    </div>
 </body>
 </html>

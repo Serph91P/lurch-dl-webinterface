@@ -1,12 +1,20 @@
-# Stage 1: Build lurch-dl
-FROM docker.io/golang:1.21-alpine3.18 AS builder
-ARG VERSION="development"
-WORKDIR /usr/src/app
-COPY . .
-RUN go build -o /usr/local/bin/lurch-dl -ldflags="-X 'main.Version=${VERSION}'"
+# Stage 1: Build lurch-dl from the latest GitHub repository
+FROM golang:1.21-alpine3.18 AS builder
+
+# Installiere Git
+RUN apk add --no-cache git
+
+# Klone das Repository
+RUN git clone https://github.com/ChaoticByte/lurch-dl.git /usr/src/lurch-dl
+
+# Wechsle in das Repository-Verzeichnis
+WORKDIR /usr/src/lurch-dl
+
+# Baue lurch-dl
+RUN go build -o /usr/local/bin/lurch-dl
 
 # Stage 2: Final Image
-FROM docker.io/alpine:3.18
+FROM alpine:3.18
 WORKDIR /output/
 
 # Kopiere lurch-dl vom Builder
@@ -16,10 +24,10 @@ COPY --from=builder /usr/local/bin/lurch-dl /usr/local/bin/lurch-dl
 RUN apk add --no-cache python3 py3-pip \
     && pip3 install flask gunicorn uvicorn quart
 
-
-# Kopiere die Flask-App und Templates in das Image
+# Kopiere die Flask-App, Templates und Static-Dateien in das Image
 COPY /web_ui/app.py /webapp/app.py
 COPY /web_ui/templates /webapp/templates
+COPY /web_ui/static /webapp/static
 
 # Setze das Arbeitsverzeichnis
 WORKDIR /webapp
