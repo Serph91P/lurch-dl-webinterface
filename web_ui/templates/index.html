@@ -32,10 +32,17 @@
     
             document.getElementById("stop-download").onclick = function() {
                 ws.send(JSON.stringify({ action: "stop" }));
-                document.getElementById("stop-download").disabled = true;  // Button deaktivieren
+                this.disabled = true; // Deaktiviert den Stop-Download-Button
+    
+                // Setze die Inhalte der Elemente zurück
+                document.getElementById("title").textContent = "";
+                document.getElementById("format").textContent = "";
+                document.getElementById("progress").textContent = "";
+                document.getElementById("error").textContent = "";
+                document.getElementById("output").textContent = "";
             };
         });
-    </script>    
+    </script>       
 </head>
 <body>
     <header>
