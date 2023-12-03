@@ -27,12 +27,12 @@
             document.getElementById("start-download").onclick = function() {
                 var url = document.getElementById("url").value;
                 ws.send(JSON.stringify({ action: "start", url: url }));
-                document.getElementById("stop-download").style.display = 'block';
+                document.getElementById("stop-download").disabled = false;  // Button aktivieren
             };
     
             document.getElementById("stop-download").onclick = function() {
                 ws.send(JSON.stringify({ action: "stop" }));
-                document.getElementById("stop-download").style.display = 'none';
+                document.getElementById("stop-download").disabled = true;  // Button deaktivieren
             };
         });
     </script>    
@@ -44,7 +44,7 @@
     <div class="container">
         <input type="text" id="url" placeholder="URL eingeben">
         <button id="start-download">Download starten</button>
-        <button id="stop-download" style="display: none;">Download stoppen</button>
+        <button id="stop-download" disabled>Download stoppen</button>
         <div id="title"></div>
         <div id="format"></div>
         <div id="progress"></div>

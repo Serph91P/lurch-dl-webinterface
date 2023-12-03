@@ -16,6 +16,7 @@ input[type="text"] {
   padding: 10px;
   margin: 10px 0;
   width: 300px;
+  margin-bottom: 10px;
 }
 button {
   padding: 10px 15px;
@@ -24,6 +25,7 @@ button {
   color: white;
   border: none;
   cursor: pointer;
+  margin: 10px 5px;
 }
 button:hover {
   background-color: #005f73;
@@ -36,4 +38,7 @@ button:hover {
   width: 80%;
   margin-left: auto;
   margin-right: auto;
+}
+.container {
+  text-align: center;
 }
