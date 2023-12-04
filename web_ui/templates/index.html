@@ -15,10 +15,14 @@
                 } else if (message.type === "format") {
                     document.getElementById("format").textContent = "Format: " + message.format;
                 } else if (message.type === "progress") {
-                    var progress = (message.progress * 100).toFixed(2) + "%";  // Fortschritt in Prozent
-                    var rate = (message.rate / 1000000).toFixed(2) + " MB/s";  // Download-Geschwindigkeit in MB/s
-                    var status = message.status ? "Status: " + message.status : "";  // Zusätzlicher Status
-                    document.getElementById("progress").textContent = "Fortschritt: " + progress + ", Geschwindigkeit: " + rate + ", " + status;
+                    var progressPercent = (message.progress * 100).toFixed(2); // Fortschritt in Prozent
+                    var rate = (message.rate / 1000000).toFixed(2) + " MB/s"; // Download-Geschwindigkeit in MB/s
+
+                    document.getElementById("progress-bar").style.width = progressPercent + "%";
+                    document.getElementById("progress-text").textContent = progressPercent + "%";
+                    document.getElementById("download-rate").textContent = "Download-Rate: " + rate + (extraInfo ? ", " + extraInfo : "");
+                
+
                 } else if (message.type === "error") {
                     document.getElementById("error").textContent = "Fehler: " + message.message;
                 }
@@ -54,9 +58,13 @@
         <button id="stop-download" disabled>Download stoppen</button>
         <div id="title"></div>
         <div id="format"></div>
-        <div id="progress"></div>
+        <div id="progress-container" style="width: 80%; background-color: #ddd; margin: 0 auto;">
+            <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; color: white; text-align: center;">
+                <span id="progress-text"></span>
+            </div>
+        </div>
+        <div id="download-rate"></div>              
         <div id="error"></div>
-        <div id="output"></div>
     </div>
 </body>
 </html>

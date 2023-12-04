@@ -30,15 +30,36 @@ button {
 button:hover {
   background-color: #005f73;
 }
-#output, #progress, #error {
+#error {
   margin: 10px 0;
   padding: 5px;
   border-radius: 5px;
   background-color: #ddd;
-  width: 80%;
+  width: 300px;
   margin-left: auto;
   margin-right: auto;
 }
+
+#progress-container {
+  width: 300px; /* Anpassen der Breite des Containers */
+  background-color: #ddd;
+  border-radius: 5px;
+  margin: 20px auto;
+}
+
+#progress-bar {
+  height: 20px;
+  background-color: #4CAF50;
+  border-radius: 5px;
+  line-height: 20px; /* Zentrieren des Texts vertikal */
+  color: white;
+}
+
+#download-rate {
+  text-align: center;
+  margin-top: 10px;
+}
+
 .container {
   text-align: center;
 }
