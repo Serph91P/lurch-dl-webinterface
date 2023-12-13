@@ -15,24 +15,18 @@ RUN go build -o /usr/local/bin/lurch-dl
 
 # Stage 2: Final Image
 FROM alpine:3.18
-WORKDIR /output/
 
-# Kopiere lurch-dl vom Builder
-COPY --from=builder /usr/local/bin/lurch-dl /usr/local/bin/lurch-dl
-
-# Installiere Python, Flask, Gunicorn, Uvicorn und Quart
+# Installiere Python und Quart
 RUN apk add --no-cache python3 py3-pip \
-    && pip3 install flask gunicorn uvicorn quart
-
-# Kopiere die Flask-App, Templates und Static-Dateien in das Image
-COPY /web_ui/app.py /webapp/app.py
-COPY /web_ui/templates /webapp/templates
-COPY /web_ui/static /webapp/static
+    && pip3 install quart uvicorn
 
 # Setze das Arbeitsverzeichnis
 WORKDIR /webapp
 
-# Startskript für Flask-Server (und möglicherweise weitere Initialisierung)
+# Kopiere lurch-dl vom Builder
+COPY --from=builder /usr/local/bin/lurch-dl /usr/local/bin/lurch-dl
+
+# Startskript für Quart-Server (und möglicherweise weitere Initialisierung)
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
