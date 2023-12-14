@@ -1,128 +1,50 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Lurch-DL Web Interface</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             var ws = new WebSocket("ws://" + window.location.host + "/ws");
-            var downloadStopped = false;
 
-            ws.onmessage = function(event) {
+            ws.onmessage = function (event) {
                 var message = JSON.parse(event.data);
+                // Füge hier die Logik für die Verarbeitung der WebSocket-Nachrichten ein
+            };
 
-                switch (message.type) {
-                    case "available_formats":
-                        var formats = message.formats.map(f => `${f.format} (${f.url})`).join(", ");
-                        document.getElementById("available-formats").textContent = "Verfügbare Formate: " + formats;
-                        break;
-                    case "available_chapters":
-                        var chapters = message.chapters.map(c => `Kapitel ${c.index + 1}: ${c.title}`).join(", ");
-                        document.getElementById("available-chapters").textContent = "Verfügbare Kapitel: " + chapters;
-                        break;
-                    case "video_meta":
-                        document.getElementById("video-meta").textContent = "Video Titel: " + message.title;
-                        break;
-                    case "format":
-                        document.getElementById("chosen-format").textContent = "Gewähltes Format: " + message.format;
-                        break;
-                    case "progress":
-                        var progressPercent = (message.progress * 100).toFixed(2);
-                        document.getElementById("progress-bar").style.width = progressPercent + "%";
-                        document.getElementById("progress-text").textContent = progressPercent + "%";
-                        var rate = message.rate ? (message.rate / 1000000).toFixed(2) + " MB/s" : "";
-                        var extraInfo = (message.delaying ? "verzögert" : "") + (message.waiting ? "wartend" : "");
-                        document.getElementById("download-rate").textContent = "Download-Rate: " + rate + " " + extraInfo;
-                        break;
-                    case "video_data":
-                        // Logik für die Verarbeitung von Video-Daten
-                        break;
-                    case "info":
-                        document.getElementById("info-message").textContent = "Info: " + message.message;
-                        break;
-                    case "error":
-                        document.getElementById("error").textContent = "Fehler: " + message.message;
-                        break;
+            document.getElementById("start-download").onclick = function () {
+                var url = document.getElementById("url").value;
+                // Füge hier die Logik für den Start-Download-Button ein
+            };
+
+            document.getElementById("stop-download").onclick = function () {
+                // Füge hier die Logik für den Stopp-Download-Button ein
+            };
+
+            document.getElementById("settings-button").onclick = function () {
+                var url = document.getElementById("url").value;
+                if (url) {
+                    window.location.href = "/options?url=" + encodeURIComponent(url);
+                } else {
+                    alert("Bitte geben Sie eine URL ein.");
                 }
             };
-
-            document.getElementById("start-download").onclick = function() {
-                var url = document.getElementById("url").value;
-                var options = {
-                    action: downloadStopped ? "continue" : "start",
-                    url: url,
-                    chapter: document.getElementById("chapter-select").value,
-                    format: document.getElementById("format-select").value,
-                    output: document.getElementById("output-file").value,
-                    start: document.getElementById("start-time").value,
-                    stop: document.getElementById("stop-time").value,
-                    overwrite: document.getElementById("overwrite").checked,
-                    maxRate: document.getElementById("max-rate").value
-                };
-                ws.send(JSON.stringify(options));
-                downloadStopped = false;
-                document.getElementById("stop-download").disabled = false;
-            };
-
-            document.getElementById("stop-download").onclick = function() {
-                ws.send(JSON.stringify({ action: "stop" }));
-                this.disabled = true;
-                downloadStopped = true;
-            };
-
-            document.getElementById("stop-download").onclick = function() {
-                ws.send(JSON.stringify({ action: "stop" }));
-                this.disabled = true;
-                document.getElementById("title").textContent = "";
-                document.getElementById("format").textContent = "";
-                document.getElementById("progress-bar").style.width = "0%";
-                document.getElementById("progress-text").textContent = "";
-                document.getElementById("download-rate").textContent = "";
-                document.getElementById("error").textContent = "";
-                document.getElementById("available-formats").textContent = "";
-                document.getElementById("available-chapters").textContent = "";
-                document.getElementById("video-meta").textContent = "";
-                document.getElementById("chosen-format").textContent = "";
-                document.getElementById("info-message").textContent = "";
-            };
         });
-    </script>       
+    </script>
 </head>
+
 <body>
     <header>
         <h1>Lurch-DL Web Interface</h1>
     </header>
     <div class="container">
         <input type="text" id="url" placeholder="URL eingeben">
-        <div id="options-menu">
-            <select id="chapter-select">
-                <option value="-1">Wähle ein Kapitel</option>
-                <!-- Dynamisch hinzugefügte Kapiteloptionen -->
-            </select>
-            <select id="format-select">
-                <option value="auto">Automatisches Format</option>
-                <!-- Dynamisch hinzugefügte Formatoptionen -->
-            </select>
-            <input type="text" id="output-file" placeholder="Ausgabedatei">
-            <input type="text" id="start-time" placeholder="Startzeit">
-            <input type="text" id="stop-time" placeholder="Stoppzeit">
-            <input type="checkbox" id="overwrite"> Überschreiben
-            <input type="number" id="max-rate" placeholder="Maximale Rate (MB/s)">
-        </div>
         <button id="start-download">Download starten</button>
         <button id="stop-download" disabled>Download stoppen</button>
-        <div id="video-meta"></div>
-        <div id="chosen-format"></div>
-        <div id="available-formats"></div>
-        <div id="available-chapters"></div>
-        <div id="progress-container" style="width: 80%; background-color: #ddd; margin: 0 auto;">
-            <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; color: white; text-align: center;">
-                <span id="progress-text"></span>
-            </div>
-        </div>
-        <div id="download-rate"></div>
-        <div id="info-message"></div>
-        <div id="error"></div>
+        <button id="settings-button">Einstellungen</button>
+        <!-- Füge hier weitere HTML-Elemente hinzu, falls benötigt -->
     </div>
 </body>
+
 </html>

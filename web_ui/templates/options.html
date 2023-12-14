@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Options - Lurch-DL Web Interface</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            var urlParams = new URLSearchParams(window.location.search);
+            var url = urlParams.get('url');
+            if (url) {
+                fetchOptionsData(url);
+            } else {
+                console.error("URL-Parameter fehlt");
+                alert("URL-Parameter fehlt");
+            }
+        });
+
+        async function fetchOptionsData(url) {
+            try {
+                const response = await fetch('/get-options-data?url=' + encodeURIComponent(url));
+                if (!response.ok) {
+                    throw new Error('Serverantwort war nicht OK');
+                }
+                const data = await response.json();
+                fillSelectOptions(data.formats || [], data.chapters || []);
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Optionsdaten:', error);
+                alert('Fehler beim Abrufen der Optionsdaten: ' + error.message);
+            }
+        }
+
+        function fillSelectOptions(formats, chapters) {
+            var formatSelect = document.getElementById('format-select');
+            if (formats.length === 0) {
+                formatSelect.innerHTML = '<option value="">Keine Formate verfügbar</option>';
+            } else {
+                formats.forEach(function (format) {
+                    var option = document.createElement('option');
+                    option.value = format.format;
+                    option.textContent = format.format;
+                    formatSelect.appendChild(option);
+                });
+            }
+
+            var chapterSelect = document.getElementById('chapter-select');
+            if (chapters.length === 0) {
+                chapterSelect.innerHTML = '<option value="">Keine Kapitel verfügbar</option>';
+            } else {
+                chapters.forEach(function (chapter) {
+                    var option = document.createElement('option');
+                    option.value = chapter.index;
+                    option.textContent = chapter.title;
+                    chapterSelect.appendChild(option);
+                });
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <h1>Lurch-DL Optionen</h1>
+    </header>
+    <div class="container">
+        <div class="options-menu">
+            <h2>Optionen</h2>
+            <label>Kapitel: <select id="chapter-select"></select></label>
+            <label>Format: <select id="format-select"></select></label>
+            <label>Output-Datei: <input type="text" id="output-file"></label>
+            <label>Startzeit: <input type="text" id="start-time"></label>
+            <label>Stoppzeit: <input type="text" id="stop-time"></label>
+            <label><input type="checkbox" id="overwrite"> Überschreiben</label>
+            <label>Maximale Rate (MB/s): <input type="number" id="max-rate"></label>
+        </div>
+        <button onclick="window.location.href='/'">Zurück zur Hauptseite</button>
+    </div>
+</body>
+
+</html>
