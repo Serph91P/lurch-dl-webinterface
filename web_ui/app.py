@@ -1,11 +1,14 @@
-from quart import Quart, websocket, render_template
+from quart import Quart, websocket, render_template, request
 import asyncio
 import json
 import subprocess
+import logging
 
 app = Quart(__name__, static_folder='/webapp/static', static_url_path='/static')
 download_process = None  # Globale Variable für den Download-Prozess
-last_url = None  # Globale Variable für die zuletzt verwendete URL
+
+# Konfiguriere das Logging
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 async def index():
@@ -14,14 +17,23 @@ async def index():
 # Funktion, um verfügbare Formate und Kapitel abzurufen
 async def get_lurch_dl_data(url):
     format_process = await asyncio.create_subprocess_exec(
-        '/usr/local/bin/lurch-dl', '--list-formats', '--json',
-        stdout=subprocess.PIPE)
+        '/usr/local/bin/lurch-dl', '--url', url, '--list-formats', '--json',
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     chapter_process = await asyncio.create_subprocess_exec(
         '/usr/local/bin/lurch-dl', '--url', url, '--list-chapters', '--json',
-        stdout=subprocess.PIPE)
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     format_output = await format_process.stdout.read()
     chapter_output = await chapter_process.stdout.read()
+
+    if format_process.stderr:
+        error = await format_process.stderr.read()
+        logging.error("Fehler beim Abrufen der Formate: %s", error.decode())
+
+    if chapter_process.stderr:
+        error = await chapter_process.stderr.read()
+        logging.error("Fehler beim Abrufen der Kapitel: %s", error.decode())
 
     formats = json.loads(format_output.decode()) if format_output else []
     chapters = json.loads(chapter_output.decode()) if chapter_output else []
@@ -30,15 +42,15 @@ async def get_lurch_dl_data(url):
 
 @app.route('/get-options-data')
 async def get_options_data():
-    if last_url:
-        formats, chapters = await get_lurch_dl_data(last_url)
-        return json.dumps({'formats': formats, 'chapters': chapters})
-    else:
-        return json.dumps({'error': 'Keine URL angegeben'})
+    url = request.args.get('url')
+    if not url:
+        return {'error': 'Keine URL angegeben'}, 400
+    formats, chapters = await get_lurch_dl_data(url)
+    return json.dumps({'formats': formats, 'chapters': chapters})
 
 @app.websocket('/ws')
 async def ws():
-    global download_process, last_url
+    global download_process
     while True:
         data = await websocket.receive()
         message = json.loads(data)
@@ -46,7 +58,6 @@ async def ws():
         if message.get("action") in ["start", "continue"]:
             url = message.get("url")
             if url:
-                last_url = url  # Aktualisiere die zuletzt verwendete URL
                 formats, chapters = await get_lurch_dl_data(url)
             command = ["/usr/local/bin/lurch-dl", "--url", message.get("url"), "--json"]
 
