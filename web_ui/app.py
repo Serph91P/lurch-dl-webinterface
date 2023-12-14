@@ -1,4 +1,4 @@
-from quart import Quart, request, jsonify, render_template
+from quart import Quart, request, jsonify, render_template, websocket
 import asyncio
 import json
 import subprocess
@@ -14,7 +14,6 @@ logging.basicConfig(level=logging.INFO)
 async def index():
     return await render_template('index.html')
 
-# Funktion, um verfügbare Formate und Kapitel abzurufen
 async def get_lurch_dl_data(url):
     format_process = await asyncio.create_subprocess_exec(
         '/usr/local/bin/lurch-dl', '--url', url, '--list-formats', '--json',
@@ -28,17 +27,21 @@ async def get_lurch_dl_data(url):
     async for line in format_process.stdout:
         try:
             json_line = json.loads(line.decode().strip())
-            formats.append(json_line)
+            if json_line['type'] == 'available_formats':
+                formats = json_line['formats']
+                break  # Breche die Schleife ab, nachdem das gewünschte Objekt gefunden wurde
         except json.JSONDecodeError as e:
-            logging.error("Fehler beim Parsen der JSON-Zeile: %s", e)
+            logging.error("Fehler beim Parsen der JSON-Zeile (Formate): %s", e)
 
     chapters = []
     async for line in chapter_process.stdout:
         try:
             json_line = json.loads(line.decode().strip())
-            chapters.append(json_line)
+            if json_line['type'] == 'available_chapters':
+                chapters = json_line['chapters']
+                break  # Breche die Schleife ab, nachdem das gewünschte Objekt gefunden wurde
         except json.JSONDecodeError as e:
-            logging.error("Fehler beim Parsen der JSON-Zeile: %s", e)
+            logging.error("Fehler beim Parsen der JSON-Zeile (Kapitel): %s", e)
 
     return formats, chapters
 
