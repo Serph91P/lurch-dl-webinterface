@@ -1,4 +1,4 @@
-from quart import Quart, websocket, render_template, request
+from quart import Quart, request, jsonify, render_template
 import asyncio
 import json
 import subprocess
@@ -24,19 +24,21 @@ async def get_lurch_dl_data(url):
         '/usr/local/bin/lurch-dl', '--url', url, '--list-chapters', '--json',
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    format_output = await format_process.stdout.read()
-    chapter_output = await chapter_process.stdout.read()
+    formats = []
+    async for line in format_process.stdout:
+        try:
+            json_line = json.loads(line.decode().strip())
+            formats.append(json_line)
+        except json.JSONDecodeError as e:
+            logging.error("Fehler beim Parsen der JSON-Zeile: %s", e)
 
-    if format_process.stderr:
-        error = await format_process.stderr.read()
-        logging.error("Fehler beim Abrufen der Formate: %s", error.decode())
-
-    if chapter_process.stderr:
-        error = await chapter_process.stderr.read()
-        logging.error("Fehler beim Abrufen der Kapitel: %s", error.decode())
-
-    formats = json.loads(format_output.decode()) if format_output else []
-    chapters = json.loads(chapter_output.decode()) if chapter_output else []
+    chapters = []
+    async for line in chapter_process.stdout:
+        try:
+            json_line = json.loads(line.decode().strip())
+            chapters.append(json_line)
+        except json.JSONDecodeError as e:
+            logging.error("Fehler beim Parsen der JSON-Zeile: %s", e)
 
     return formats, chapters
 
@@ -44,9 +46,15 @@ async def get_lurch_dl_data(url):
 async def get_options_data():
     url = request.args.get('url')
     if not url:
-        return {'error': 'Keine URL angegeben'}, 400
-    formats, chapters = await get_lurch_dl_data(url)
-    return json.dumps({'formats': formats, 'chapters': chapters})
+        logging.error("Keine URL angegeben")
+        return jsonify({'error': 'Keine URL angegeben'}), 400
+
+    try:
+        formats, chapters = await get_lurch_dl_data(url)
+        return jsonify({'formats': formats, 'chapters': chapters})
+    except Exception as e:
+        logging.exception("Fehler beim Abrufen von lurch-dl Daten")
+        return jsonify({'error': str(e)}), 500
 
 @app.websocket('/ws')
 async def ws():
