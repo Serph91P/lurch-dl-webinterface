@@ -8,6 +8,12 @@
         document.addEventListener("DOMContentLoaded", function () {
             var ws = new WebSocket("ws://" + window.location.host + "/ws");
 
+            // Lade die gespeicherte URL aus dem Local Storage
+            var savedUrl = localStorage.getItem('savedUrl');
+            if (savedUrl) {
+                document.getElementById("url").value = savedUrl;
+            }
+
             ws.onmessage = function (event) {
                 var message = JSON.parse(event.data);
 
@@ -30,8 +36,9 @@
                 var url = document.getElementById("url").value;
                 if (!url) {
                     alert("Bitte geben Sie eine gültige URL ein.");
-                    return;
+                    return; // Beendet die Funktion, wenn keine URL vorhanden ist
                 }
+                localStorage.setItem('savedUrl', url); // Speichern Sie die URL im Local Storage
                 var options = {
                     action: "start",
                     url: url,
@@ -50,11 +57,13 @@
             document.getElementById("stop-download").onclick = function () {
                 ws.send(JSON.stringify({ action: "stop" }));
                 this.disabled = true;
+                // Setze hier die Inhalte der Elemente zurück
             };
 
             document.getElementById("settings-button").onclick = function () {
                 var url = document.getElementById("url").value;
                 if (url) {
+                    localStorage.setItem('savedUrl', url); // Speichern Sie die URL im Local Storage
                     window.location.href = "/options?url=" + encodeURIComponent(url);
                 } else {
                     alert("Bitte geben Sie eine URL ein.");
