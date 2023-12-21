@@ -10,16 +10,46 @@
 
             ws.onmessage = function (event) {
                 var message = JSON.parse(event.data);
-                // Füge hier die Logik für die Verarbeitung der WebSocket-Nachrichten ein
+
+                switch (message.type) {
+                    case "progress":
+                        var progressPercent = (message.progress * 100).toFixed(2) + "%";
+                        var rate = (message.rate / 1000000).toFixed(2) + " MB/s";
+                        var extraInfo = (message.delaying ? "verzögert" : "") + (message.waiting ? "wartend" : "");
+                        document.getElementById("progress-bar").style.width = progressPercent;
+                        document.getElementById("progress-text").textContent = progressPercent + " (" + rate + " " + extraInfo + ")";
+                        break;
+                    case "error":
+                        document.getElementById("error-message").textContent = "Fehler: " + message.message;
+                        break;
+                    // Füge hier weitere Fälle für andere Nachrichtentypen hinzu
+                }
             };
 
             document.getElementById("start-download").onclick = function () {
                 var url = document.getElementById("url").value;
-                // Füge hier die Logik für den Start-Download-Button ein
+                if (!url) {
+                    alert("Bitte geben Sie eine gültige URL ein.");
+                    return;
+                }
+                var options = {
+                    action: "start",
+                    url: url,
+                    chapter: localStorage.getItem('selectedChapter') || '',
+                    format: localStorage.getItem('selectedFormat') || '',
+                    output: localStorage.getItem('outputFile') || '',
+                    start: localStorage.getItem('startTime') || '',
+                    stop: localStorage.getItem('stopTime') || '',
+                    overwrite: localStorage.getItem('overwrite') === 'true',
+                    maxRate: localStorage.getItem('maxRate') || ''
+                };
+                ws.send(JSON.stringify(options));
+                document.getElementById("stop-download").disabled = false;
             };
 
             document.getElementById("stop-download").onclick = function () {
-                // Füge hier die Logik für den Stopp-Download-Button ein
+                ws.send(JSON.stringify({ action: "stop" }));
+                this.disabled = true;
             };
 
             document.getElementById("settings-button").onclick = function () {
@@ -43,7 +73,11 @@
         <button id="start-download">Download starten</button>
         <button id="stop-download" disabled>Download stoppen</button>
         <button id="settings-button">Einstellungen</button>
-        <!-- Füge hier weitere HTML-Elemente hinzu, falls benötigt -->
+        <div id="progress-bar-container">
+            <div id="progress-bar" style="width: 0%;"></div>
+            <span id="progress-text"></span>
+        </div>
+        <div id="error-message"></div>
     </div>
 </body>
 
