@@ -1,4 +1,4 @@
-from quart import Quart, request, jsonify, websocket
+from quart import Quart, request, jsonify, render_template, websocket
 import asyncio
 import json
 import subprocess
@@ -16,29 +16,32 @@ async def index():
 
 # Funktion, um verfügbare Formate und Kapitel abzurufen
 async def get_lurch_dl_data(url):
+    # Prozesse für Formate und Kapitel starten
     format_process = await asyncio.create_subprocess_exec(
         '/usr/local/bin/lurch-dl', '--url', url, '--list-formats', '--json',
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
     chapter_process = await asyncio.create_subprocess_exec(
         '/usr/local/bin/lurch-dl', '--url', url, '--list-chapters', '--json',
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    formats = []
+    # Formate und Kapitel aus der Ausgabe extrahieren
+    formats, chapters = [], []
     async for line in format_process.stdout:
         try:
             json_line = json.loads(line.decode().strip())
-            formats.append(json_line)
+            if json_line['type'] == 'available_formats':
+                formats = json_line['formats']
+                break
         except json.JSONDecodeError as e:
-            logging.error("Fehler beim Parsen der JSON-Zeile: %s", e)
-
-    chapters = []
+            logging.error("Fehler beim Parsen der JSON-Zeile (Formate): %s", e)
     async for line in chapter_process.stdout:
         try:
             json_line = json.loads(line.decode().strip())
-            chapters.append(json_line)
+            if json_line['type'] == 'available_chapters':
+                chapters = json_line['chapters']
+                break
         except json.JSONDecodeError as e:
-            logging.error("Fehler beim Parsen der JSON-Zeile: %s", e)
+            logging.error("Fehler beim Parsen der JSON-Zeile (Kapitel): %s", e)
 
     return formats, chapters
 
@@ -67,8 +70,8 @@ async def ws():
             url = message.get("url")
             if url:
                 formats, chapters = await get_lurch_dl_data(url)
-            command = ["/usr/local/bin/lurch-dl", "--url", message.get("url"), "--json"]
-
+            command = ["/usr/local/bin/lurch-dl", "--url", url, "--json"]
+            
             # Füge weitere Optionen hinzu
             if message.get("chapter"):
                 command += ["--chapter", message["chapter"]]
@@ -87,8 +90,7 @@ async def ws():
 
             # Starte oder setze den Download fort
             download_process = await asyncio.create_subprocess_exec(
-                *command,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                *command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             asyncio.create_task(send_output_to_frontend(websocket, download_process))
 
         elif message.get("action") == "stop":
